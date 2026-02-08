@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tool Maker Report – Connectwell</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Inter,sans-serif;
+  background:radial-gradient(circle at 10% 20%, #667eea 0%, #764ba2 30%, #2b2d42 100%);
+  min-height:100vh;padding:24px
+}
+.container{
+  max-width:1000px;margin:auto;background:#fff;
+  padding:36px;border-radius:16px;
+  box-shadow:0 14px 40px rgba(0,0,0,.25)
+}
+.header{text-align:center}
+.connectwell{color:#ff0000;font-size:3rem;font-weight:800}
+.subtitle{color:#333;margin-top:6px}
+table{width:100%;border-spacing:0 12px;margin-top:20px}
+.tool-row{border:2px solid #000;border-radius:12px;background:#f8fafc}
+.flex-row{display:flex;gap:12px;padding:12px}
+.label{min-width:240px;font-weight:700}
+textarea{
+  flex:1;min-height:80px;
+  padding:10px;border-radius:8px;border:2px solid #aaa
+}
+.voice-btn{
+  width:44px;height:44px;border-radius:50%;
+  border:none;background:#667eea;color:#fff;
+  font-size:20px;cursor:pointer
+}
+.btn-download{
+  margin:30px auto;display:block;
+  padding:14px 28px;font-size:1.1rem;
+  background:#667eea;color:#fff;
+  border:none;border-radius:999px
+}
+.footer{text-align:center;color:#555;margin-top:12px}
+
+/* ===== MIC OVERLAY ===== */
+.mic-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.6);
+  display:flex;align-items:center;justify-content:center;
+  z-index:9999
+}
+.mic-box{
+  background:#fff;padding:30px;
+  border-radius:14px;max-width:420px;
+  text-align:center
+}
+.mic-box h2{margin-bottom:12px}
+.mic-box p{color:#555;margin-bottom:20px}
+.mic-box button{
+  padding:14px 28px;font-size:1rem;
+  background:#667eea;color:#fff;
+  border:none;border-radius:999px;cursor:pointer
+}
+</style>
+</head>
+
+<body>
+
+<!-- MIC PERMISSION OVERLAY -->
+<div class="mic-overlay" id="micOverlay">
+  <div class="mic-box">
+    <h2>🎤 Enable Microphone</h2>
+    <p>
+      Voice typing needs microphone access.<br>
+      Click below and allow microphone when browser asks.
+    </p>
+    <button onclick="requestMicPermission()">Enable Microphone</button>
+  </div>
+</div>
+
+<div class="container">
+
+<div class="header">
+  <div class="connectwell">Connectwell</div>
+  <div class="subtitle">Made by Pratik Sheladiya</div>
+</div>
+
+<table><tbody id="rows"></tbody></table>
+
+<button class="btn-download" onclick="generatePDF()">📄 Download PDF</button>
+<div class="footer">© 2025 Connectwell — Tool Maker Report</div>
+
+</div>
+
+<script>
+// ===== TOOL MAKERS =====
+const toolMakers=[
+"SHYAM PANERKAR","GURUPRASAD VENGURLEKAR","CHETAN KADAM","SAURABH GAIKWAD",
+"AJAY PAWAR","RUTIK JAMDHARE","KETAN DUGAJE","SAURABH SONAR","MANISH DAHALE",
+"ASHUTOSH MALVE","NIKHIL SINGH","VISHAL ARYA","JAYAMOHAN V","HARSHAL AGIVALE",
+"BHUSHAN BHOIR","YASH SAKPAL","HARSHAL DEOKAR","MAHESH RATHOD",
+"PRAVEEN GOLE","NILESH PAGARE","VIJAY BHAGAT","KARAN KENE",
+"VAIBHAV AWAR","RAJ BHALERAO","SHRAWAN KUMAR RAY"
+];
+
+// Render rows
+const tbody=document.getElementById("rows");
+toolMakers.forEach((n,i)=>{
+tbody.innerHTML+=`
+<tr class="tool-row"><td>
+<div class="flex-row">
+<div class="label">${i+1}. ${n}</div>
+<textarea id="c${i}"></textarea>
+<button class="voice-btn" onclick="voiceToEnglish(${i})">🎤</button>
+</div>
+</td></tr>`;
+});
+
+// ===== MIC PERMISSION =====
+async function requestMicPermission(){
+try{
+  await navigator.mediaDevices.getUserMedia({audio:true});
+  document.getElementById("micOverlay").style.display="none";
+}catch{
+  alert(
+    "Microphone blocked.\n\n" +
+    "Chrome → Site settings → Microphone → Allow\n" +
+    "Then reload the page."
+  );
+}
+}
+
+// ===== VOICE =====
+function voiceToEnglish(i){
+const SpeechRecognition=
+  window.SpeechRecognition||window.webkitSpeechRecognition;
+
+if(!SpeechRecognition){
+  alert("Speech recognition not supported");
+  return;
+}
+
+const recognition=new SpeechRecognition();
+recognition.lang="hi-IN";
+recognition.interimResults=false;
+
+const textarea=document.getElementById("c"+i);
+textarea.value="🎙️ Listening...";
+
+recognition.onresult=async(e)=>{
+  const spoken=e.results[0][0].transcript;
+  textarea.value="🌐 Translating...";
+
+  try{
+    const res=await fetch("https://libretranslate.de/translate",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({q:spoken,source:"auto",target:"en"})
+    });
+    const data=await res.json();
+    textarea.value=data.translatedText||spoken;
+  }catch{
+    textarea.value=spoken;
+  }
+};
+
+recognition.start();
+}
+
+// ===== PDF =====
+function generatePDF(){
+const{jsPDF}=window.jspdf;
+const doc=new jsPDF({unit:"pt",format:"a4"});
+const pw=doc.internal.pageSize.getWidth();
+const ph=doc.internal.pageSize.getHeight();
+const now=new Date().toLocaleString();
+
+doc.setFontSize(30);
+doc.setTextColor(255,0,0);
+doc.text("Connectwell",pw/2,60,{align:"center"});
+doc.setFontSize(16);
+doc.setTextColor(0);
+doc.text("Tool Maker Report",pw/2,90,{align:"center"});
+doc.setFontSize(11);
+doc.text("Generated on: "+now,pw/2,115,{align:"center"});
+
+const data=toolMakers.map((n,i)=>[
+`${i+1}. ${n}`,
+document.getElementById("c"+i).value||"No comment"
+]);
+
+doc.autoTable({
+startY:140,
+head:[["Tool Maker Name","Comments"]],
+body:data,
+theme:"grid",
+columnStyles:{0:{cellWidth:180,fontStyle:"bold"}},
+didDrawPage:(d)=>{
+  doc.setFontSize(9);
+  doc.setTextColor(120);
+  doc.text("Made by Pratik Sheladiya",40,ph-20);
+  doc.text("Page "+d.pageNumber,pw-40,ph-20,{align:"right"});
+}
+});
+
+doc.save("Connectwell_Tool_Maker_Report.pdf");
+}
+</script>
+
+</body>
+</html>
