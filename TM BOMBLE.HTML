@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tool Maker Report – Connectwell</title>
+
+<!-- PDF LIBS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Inter,sans-serif;
+  background:radial-gradient(circle at 10% 20%,#667eea 0%,#764ba2 30%,#2b2d42 100%);
+  min-height:100vh;padding:24px
+}
+.container{
+  max-width:960px;margin:auto;background:#fff;padding:36px;
+  border-radius:16px;box-shadow:0 14px 40px rgba(0,0,0,.25)
+}
+.header{text-align:center;margin-bottom:16px}
+.connectwell{color:#ff0000;font-weight:800;font-size:3rem}
+.subtitle{color:#333;margin-top:6px}
+.instructions{
+  margin:12px auto;background:#f0f4f8;border-left:4px solid #667eea;
+  padding:12px 16px;border-radius:8px;color:#555
+}
+.form-area{margin-top:24px;max-height:65vh;overflow-y:auto}
+table{width:100%;border-spacing:0 12px}
+.tool-row{background:#f8fafc;border:2px solid #000;border-radius:12px}
+.flex-row{display:flex;gap:16px;padding:14px}
+.label{min-width:230px;font-weight:700;color:#222}
+textarea{
+  flex:1;min-height:90px;padding:12px;font-size:1rem;
+  border-radius:8px;border:2px solid #ccc;resize:vertical
+}
+textarea:focus{
+  outline:none;border-color:#667eea;
+  box-shadow:0 0 6px rgba(102,126,234,.4)
+}
+.btn-download{
+  display:block;margin:32px auto;padding:16px 32px;
+  font-size:1.1rem;font-weight:800;color:#fff;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  border:none;border-radius:999px;cursor:pointer
+}
+.footer{text-align:center;margin-top:12px;color:#555}
+@media(max-width:760px){
+  .flex-row{flex-direction:column}
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <div class="header">
+    <div class="connectwell">Connectwell</div>
+    <div class="subtitle">Made by Pratik Sheladiya</div>
+    <div class="instructions">
+      Enter comments next to each tool maker. Click “Download PDF”.
+    </div>
+  </div>
+
+<div class="form-area">
+<table><tbody>
+
+<tr class="tool-row"><td><div class="flex-row"><div class="label">1. SHYAM PANERKAR</div><textarea id="c0"></textarea></div></td></tr>
+<tr class="tool-row"><td><div class="flex-row"><div class="label">2. GURUPRASAD VENGURLEKAR</div><textarea id="c1"></textarea></div></td></tr>
+<tr class="tool-row"><td><div class="flex-row"><div class="label">3. CHETAN KADAM</div><textarea id="c2"></textarea></div></td></tr>
+<tr class="tool-row"><td><div class="flex-row"><div class="label">4. SAURABH GAIKWAD</div><textarea id="c3"></textarea></div></td></tr>
+<tr class="tool-row"><td><div class="flex-row"><div class="label">5. AJAY PAWAR</div><textarea id="c4"></textarea></div></td></tr>
+<tr class="tool-row"><td><div class="flex-row"><div class="label">6. RUTIK JAMDHARE</div><textarea id="c5"></textarea></div></td></tr>
+<tr class="tool-row"><td><div class="flex-row"><div class="label">7. KETAN DUGAJE</div><textarea id="c6"></textarea></div></td></tr>
+<tr class="tool-row"><td><div class="flex-row"><div class="label">8. SAURABH SONAR</div><textarea id="c7"></textarea></div></td></tr>
+<tr class="tool-row"><td><div class="flex-row"><div class="label">9. MANISH DAHALE</div><textarea id="c8"></textarea></div></td></tr>
+<tr class="tool-row"><td><div class="flex-row"><div class="label">10. ASHUTOSH MALVE</div><textarea id="c9"></textarea></div></td></tr>
+
+</tbody></table>
+</div>
+
+<button class="btn-download" onclick="generatePDF()">📄 Download PDF</button>
+<div class="footer">© 2025 Connectwell — Tool Maker Report</div>
+</div>
+
+<script>
+const toolMakers=[
+"SHYAM PANERKAR","GURUPRASAD VENGURLEKAR","CHETAN KADAM","SAURABH GAIKWAD",
+"AJAY PAWAR","RUTIK JAMDHARE","KETAN DUGAJE","SAURABH SONAR",
+"MANISH DAHALE","ASHUTOSH MALVE"
+];
+
+function generatePDF(){
+const{jsPDF}=window.jspdf;
+const doc=new jsPDF({unit:"pt",format:"a4"});
+const pw=doc.internal.pageSize.getWidth();
+const ph=doc.internal.pageSize.getHeight();
+const now=new Date();
+const ts=now.toLocaleDateString()+" "+now.toLocaleTimeString();
+
+doc.setFontSize(32);doc.setTextColor(255,0,0);
+doc.text("Connectwell",pw/2,60,{align:"center"});
+doc.setFontSize(16);doc.setTextColor(0);
+doc.text("Tool Maker Report",pw/2,90,{align:"center"});
+doc.setFontSize(11);
+doc.text("Generated on: "+ts,pw/2,115,{align:"center"});
+
+const data=toolMakers.map((n,i)=>[
+`${i+1}. ${n}`,
+document.getElementById("c"+i).value || "No comment"
+]);
+
+doc.autoTable({
+startY:140,
+head:[["Tool Maker Name","Comments"]],
+body:data,
+theme:"grid",
+headStyles:{fillColor:[255,0,0],textColor:255},
+styles:{fontSize:10,cellPadding:8},
+columnStyles:{0:{cellWidth:180,fontStyle:"bold"}},
+didDrawPage:(d)=>{
+doc.setFontSize(9);
+doc.setTextColor(120);
+doc.text("Made by Pratik Sheladiya",40,ph-20);
+doc.text("Page "+d.pageNumber,pw-40,ph-20,{align:"right"});
+}
+});
+
+doc.save("Connectwell_Tool_Maker_Report.pdf");
+}
+</script>
+
+</body>
+</html>
